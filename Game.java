@@ -11,6 +11,8 @@ public class Game
 
     float difficulty;
 
+    public boolean ended;
+
     Map<Integer, Boolean> keys = new HashMap<Integer, Boolean>();
 
     ArrayList<Paddle> paddleList = new ArrayList<Paddle>();
@@ -37,24 +39,51 @@ public class Game
                     else
                         ball.position.x = paddle.position.x - ball.size.x;
 
-                    ball.velocity.x *= -1.1;
+                    ball.velocity.x *= -1;
+                    ball.velocity.x *= (1 + difficulty);
+                    ball.velocity.y *= (1 + difficulty);
                 }
             }
 
             if (ball.position.y + ball.size.y >= Main.windowSize.y || ball.position.y <= 0)
-                ball.velocity.y = -ball.velocity.y;
+            {
+                if (ball.position.y < Main.windowSize.y / 2)
+                    ball.position.y = 0;
+                else
+                    ball.position.y = Main.windowSize.y - ball.size.y;
 
+                ball.velocity.y *= -1;
+                ball.velocity.x *= (1 + difficulty);
+                ball.velocity.y *= (1 + difficulty);
+            }
+            
             if (ball.position.x <= 0)
             {
                 // increment ai score
                 ball.ResetBall(this);
+                for (Paddle paddle : paddleList) 
+                {
+                    if (paddle.aiControlled)
+                        paddle.score += 1;
+                }
             }
 
             if (ball.position.x + ball.size.x >= Main.windowSize.x)
             {
                 // increment player score
                 ball.ResetBall(this);
+                for (Paddle paddle : paddleList) 
+                {
+                    if (!paddle.aiControlled)
+                        paddle.score += 1;
+                }
             }
+
+            if (ball.velocity.x > 4f * (difficulty + 1))
+                ball.velocity.x = 4f * (difficulty + 1);
+
+            if (ball.velocity.y > 4f * (difficulty + 1))
+                ball.velocity.y = 4f * (difficulty + 1);
         }
 
         for (Paddle paddle : paddleList) 
@@ -134,26 +163,61 @@ public class Game
                 }
             }
         }
+
+        if (keys.get(KeyEvent.VK_R) != null)
+        {
+            if (keys.get(KeyEvent.VK_R))
+            {
+                ballList.clear();
+                paddleList.clear();
+                Initalize.InitalizeGame(this);
+            }
+        }
+
+        if (keys.get(KeyEvent.VK_RIGHT) != null)
+        {
+            if (keys.get(KeyEvent.VK_RIGHT))
+            {
+                difficulty += 0.01f;
+
+                if (difficulty > 1f)
+                    difficulty = 1f;
+            }
+        }
+
+        if (keys.get(KeyEvent.VK_LEFT) != null)
+        {
+            if (keys.get(KeyEvent.VK_LEFT))
+            {
+                difficulty -= 0.01f;
+
+                if (difficulty < 0.01f)
+                    difficulty = 0.01f;
+            }
+        }
     }
 
     void UpdateEntities()
     {
-        AI();
-
-        for (Ball ball : ballList) 
+        if (!ended)
         {
-            ball.position.x += ball.velocity.x;
-            ball.position.y += ball.velocity.y;
-            ball.hitbox = new CollisionRect(ball.position, ball.size);
-        }
+            AI();
 
-        for (Paddle paddle : paddleList) 
-        {
-            paddle.position.x += paddle.velocity.x;
-            paddle.position.y += paddle.velocity.y;
-            paddle.hitbox = new CollisionRect(paddle.position, paddle.size);
-            paddle.velocity.x *= 0.8f;
-            paddle.velocity.y *= 0.8f;
+            for (Ball ball : ballList) 
+            {
+                ball.position.x += ball.velocity.x;
+                ball.position.y += ball.velocity.y;
+                ball.hitbox = new CollisionRect(ball.position, ball.size);
+            }
+
+            for (Paddle paddle : paddleList) 
+            {
+                paddle.position.x += paddle.velocity.x;
+                paddle.position.y += paddle.velocity.y;
+                paddle.hitbox = new CollisionRect(paddle.position, paddle.size);
+                paddle.velocity.x *= 0.8f;
+                paddle.velocity.y *= 0.8f;
+            }
         }
     }
 }

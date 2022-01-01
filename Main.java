@@ -29,7 +29,7 @@ public class Main
         {
             if (!init)
             {
-                if (!Initalize.Init(game))
+                if (!Initalize.InitalizeGame(game))
                     quit = true;
 
                 init = true;

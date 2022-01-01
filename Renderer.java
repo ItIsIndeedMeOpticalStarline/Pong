@@ -1,7 +1,9 @@
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Toolkit;
-
 import javax.swing.JFrame;
+
+import java.awt.Toolkit;
 
 public class Renderer extends JFrame
 {
@@ -38,7 +40,29 @@ public class Renderer extends JFrame
         for (Paddle paddle : game.paddleList)
         {
             this.DrawEntity(graphics, paddle, "Rectangle");
+
+            if (paddle.aiControlled)
+            {
+                this.DrawString(graphics, new Vector2D((Main.windowSize.x / 3) * 2, 50), String.valueOf(paddle.score), Font.SANS_SERIF);
+                if (paddle.score >= 10)
+                {
+                    game.ended = true;
+                    this.DrawString(graphics, new Vector2D(Main.windowSize.x / 2, 50), "Player 2 Wins!", Font.SANS_SERIF);
+                    this.DrawString(graphics, new Vector2D(Main.windowSize.x / 2, 80), "Press R to reset", Font.SANS_SERIF);
+                }
+            }
+            else
+            {
+                this.DrawString(graphics, new Vector2D(Main.windowSize.x / 3, 50), String.valueOf(paddle.score), Font.SANS_SERIF);
+                if (paddle.score >= 10)
+                {
+                    game.ended = true;
+                    this.DrawString(graphics, new Vector2D(Main.windowSize.x / 2, 50), "Player 1 Wins!", Font.SANS_SERIF);
+                    this.DrawString(graphics, new Vector2D(Main.windowSize.x / 2, 80), "Press R to reset", Font.SANS_SERIF);
+                }
+            }
         }
+        this.DrawString(graphics, new Vector2D(Main.windowSize.x / 2, Main.windowSize.y - 50), "Press R to reset, left and right to control the difficulty, and up and down top control the paddle", Font.SANS_SERIF);
         Toolkit.getDefaultToolkit().sync(); // Stops my frames from stuttering. Not sure why
     }
 
@@ -63,5 +87,19 @@ public class Renderer extends JFrame
                 System.out.println("PONG error: Unspecified drawType in Renderer::DrawEntity(Graphics, GameEntity, String)");
                 break;
         }
+    }
+
+    public void DrawString(Graphics graphics, Vector2D position, String str, String fontName) // Centers string when drawing
+    {
+        Font font = Font.getFont(fontName);
+
+        graphics.setFont(font);
+
+        FontMetrics metrics = graphics.getFontMetrics();
+
+        Vector2D pos = new Vector2D(position.x + (-metrics.stringWidth(str) / 2), 
+            position.y + (-metrics.getHeight() / 2) + metrics.getAscent());
+
+        graphics.drawString(str, (int)pos.x, (int)pos.y);
     }
 }
